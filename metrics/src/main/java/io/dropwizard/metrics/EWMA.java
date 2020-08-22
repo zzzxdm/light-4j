@@ -2,7 +2,7 @@
  * Copyright 2010-2013 Coda Hale and Yammer, Inc., 2014-2017 Dropwizard Team
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -19,7 +19,7 @@ package io.dropwizard.metrics;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.Math.exp;
-
+import java.util.concurrent.atomic.LongAdder;
 /**
  * An exponentially-weighted moving average.
  *
@@ -42,7 +42,7 @@ public class EWMA {
     private volatile boolean initialized = false;
     private volatile double rate = 0.0;
 
-    private final LongAdder uncounted = LongAdderFactory.create();
+    private final LongAdder uncounted = new LongAdder();
     private final double alpha, interval;
 
     /**

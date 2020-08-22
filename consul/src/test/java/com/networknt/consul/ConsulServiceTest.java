@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Network New Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -41,11 +41,11 @@ public class ConsulServiceTest {
         String s = service.toString();
         System.out.println("s = " + s);
         if(config.tcpCheck) {
-            Assert.assertEquals("{\"ID\":\"127.0.0.1:com.networknt.apib-1.0.0:7442\",\"Name\":\"com.networknt.apib-1.0.0\",\"Tags\":[\"protocol_light\"],\"Address\":\"127.0.0.1\",\"Port\":7442,\"Check\":{\"ID\":\"check-127.0.0.1:com.networknt.apib-1.0.0:7442\",\"DeregisterCriticalServiceAfter\":\"2m\",\"TCP\":\"127.0.0.1:7442\",\"Interval\":\"10s\"}}", s);
+            Assert.assertEquals("{\"ID\":\"127.0.0.1:com.networknt.apib-1.0.0:7442\",\"Name\":\"com.networknt.apib-1.0.0\",\"Tags\":[\"protocol_light\"],\"Address\":\"127.0.0.1\",\"Port\":7442,\"Check\":{\"CheckID\":\"check-127.0.0.1:com.networknt.apib-1.0.0:7442\",\"DeregisterCriticalServiceAfter\":\"2m\",\"TCP\":\"127.0.0.1:7442\",\"Interval\":\"10s\"}}", s);
         } else if(config.httpCheck) {
-            Assert.assertEquals("{\"ID\":\"127.0.0.1:com.networknt.apib-1.0.0:7442\",\"Name\":\"com.networknt.apib-1.0.0\",\"Tags\":[\"protocol_light\"],\"Address\":\"127.0.0.1\",\"Port\":7442,\"Check\":{\"ID\":\"check-127.0.0.1:com.networknt.apib-1.0.0:7442\",\"DeregisterCriticalServiceAfter\":\"2m\",\"HTTP\":\"https://127.0.0.1:7442/health/com.networknt.apib-1.0.0\",\"TLSSkipVerify\":true,\"Interval\":\"10s\"}}", s);
+            Assert.assertEquals("{\"ID\":\"127.0.0.1:com.networknt.apib-1.0.0:7442\",\"Name\":\"com.networknt.apib-1.0.0\",\"Tags\":[\"protocol_light\"],\"Address\":\"127.0.0.1\",\"Port\":7442,\"Check\":{\"CheckID\":\"check-127.0.0.1:com.networknt.apib-1.0.0:7442\",\"DeregisterCriticalServiceAfter\":\"2m\",\"HTTP\":\"https://127.0.0.1:7442/health/com.networknt.apib-1.0.0\",\"TLSSkipVerify\":true,\"Interval\":\"10s\"}}", s);
         } else {
-            Assert.assertEquals("{\"ID\":\"127.0.0.1:com.networknt.apib-1.0.0:7442\",\"Name\":\"com.networknt.apib-1.0.0\",\"Tags\":[\"protocol_light\"],\"Address\":\"127.0.0.1\",\"Port\":7442,\"Check\":{\"ID\":\"check-127.0.0.1:com.networknt.apib-1.0.0:7442\",\"DeregisterCriticalServiceAfter\":\"2m\",\"TTL\":\"10s\"}}", s);
+            Assert.assertEquals("{\"ID\":\"127.0.0.1:com.networknt.apib-1.0.0:7442\",\"Name\":\"com.networknt.apib-1.0.0\",\"Tags\":[\"protocol_light\"],\"Address\":\"127.0.0.1\",\"Port\":7442,\"Check\":{\"CheckID\":\"check-127.0.0.1:com.networknt.apib-1.0.0:7442\",\"DeregisterCriticalServiceAfter\":\"2m\",\"TTL\":\"10s\"}}", s);
         }
 
     }
@@ -65,11 +65,11 @@ public class ConsulServiceTest {
         String s = service.toString();
         System.out.println("s = " + s);
         if(config.tcpCheck) {
-            Assert.assertEquals("{\"ID\":\"127.0.0.1:com.networknt.apib-1.0.0:7442\",\"Name\":\"com.networknt.apib-1.0.0\",\"Tags\":[\"protocol_light\",\"second_tag\"],\"Address\":\"127.0.0.1\",\"Port\":7442,\"Check\":{\"ID\":\"check-127.0.0.1:com.networknt.apib-1.0.0:7442\",\"DeregisterCriticalServiceAfter\":\"2m\",\"TCP\":\"127.0.0.1:7442\",\"Interval\":\"10s\"}}", s);
+            Assert.assertEquals("{\"ID\":\"127.0.0.1:com.networknt.apib-1.0.0:7442\",\"Name\":\"com.networknt.apib-1.0.0\",\"Tags\":[\"protocol_light\",\"second_tag\"],\"Address\":\"127.0.0.1\",\"Port\":7442,\"Check\":{\"CheckID\":\"check-127.0.0.1:com.networknt.apib-1.0.0:7442\",\"DeregisterCriticalServiceAfter\":\"2m\",\"TCP\":\"127.0.0.1:7442\",\"Interval\":\"10s\"}}", s);
         } else if(config.httpCheck) {
-            Assert.assertEquals("{\"ID\":\"127.0.0.1:com.networknt.apib-1.0.0:7442\",\"Name\":\"com.networknt.apib-1.0.0\",\"Tags\":[\"protocol_light\",\"second_tag\"],\"Address\":\"127.0.0.1\",\"Port\":7442,\"Check\":{\"ID\":\"check-127.0.0.1:com.networknt.apib-1.0.0:7442\",\"DeregisterCriticalServiceAfter\":\"2m\",\"HTTP\":\"https://127.0.0.1:7442/health/com.networknt.apib-1.0.0\",\"TLSSkipVerify\":true,\"Interval\":\"10s\"}}", s);
+            Assert.assertEquals("{\"ID\":\"127.0.0.1:com.networknt.apib-1.0.0:7442\",\"Name\":\"com.networknt.apib-1.0.0\",\"Tags\":[\"protocol_light\",\"second_tag\"],\"Address\":\"127.0.0.1\",\"Port\":7442,\"Check\":{\"CheckID\":\"check-127.0.0.1:com.networknt.apib-1.0.0:7442\",\"DeregisterCriticalServiceAfter\":\"2m\",\"HTTP\":\"https://127.0.0.1:7442/health/com.networknt.apib-1.0.0\",\"TLSSkipVerify\":true,\"Interval\":\"10s\"}}", s);
         } else {
-            Assert.assertEquals("{\"ID\":\"127.0.0.1:com.networknt.apib-1.0.0:7442\",\"Name\":\"com.networknt.apib-1.0.0\",\"Tags\":[\"protocol_light\",\"second_tag\"],\"Address\":\"127.0.0.1\",\"Port\":7442,\"Check\":{\"ID\":\"check-127.0.0.1:com.networknt.apib-1.0.0:7442\",\"DeregisterCriticalServiceAfter\":\"2m\",\"TTL\":\"10s\"}}", s);
+            Assert.assertEquals("{\"ID\":\"127.0.0.1:com.networknt.apib-1.0.0:7442\",\"Name\":\"com.networknt.apib-1.0.0\",\"Tags\":[\"protocol_light\",\"second_tag\"],\"Address\":\"127.0.0.1\",\"Port\":7442,\"Check\":{\"CheckID\":\"check-127.0.0.1:com.networknt.apib-1.0.0:7442\",\"DeregisterCriticalServiceAfter\":\"2m\",\"TTL\":\"10s\"}}", s);
         }
 
     }

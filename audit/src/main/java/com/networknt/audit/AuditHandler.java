@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Network New Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -20,6 +20,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.networknt.config.Config;
 import com.networknt.handler.Handler;
 import com.networknt.handler.MiddlewareHandler;
+import com.networknt.httpstring.AttachmentConstants;
 import com.networknt.mask.Mask;
 import com.networknt.utility.ModuleRegistry;
 import io.undertow.Handlers;
@@ -77,10 +78,6 @@ public class AuditHandler implements MiddlewareHandler {
 
     private AuditConfig auditConfig;
 
-
-    // The key to the audit info attachment in exchange. Allow other handlers to set values.
-    public static final AttachmentKey<Map> AUDIT_INFO = AttachmentKey.create(Map.class);
-
     private volatile HttpHandler next;
 
     public AuditHandler() {
@@ -90,7 +87,7 @@ public class AuditHandler implements MiddlewareHandler {
 
     @Override
     public void handleRequest(final HttpServerExchange exchange) throws Exception {
-        Map<String, Object> auditInfo = exchange.getAttachment(AuditHandler.AUDIT_INFO);
+        Map<String, Object> auditInfo = exchange.getAttachment(AttachmentConstants.AUDIT_INFO);
         Map<String, Object> auditMap = new LinkedHashMap<>();
         final long start = System.currentTimeMillis();
         auditMap.put(TIMESTAMP, System.currentTimeMillis());
@@ -117,7 +114,7 @@ public class AuditHandler implements MiddlewareHandler {
 
                 // add additional fields accumulated during the microservice execution
                 // according to the config
-                //Map<String, Object> auditInfo1 = exchange.getAttachment(AuditHandler.AUDIT_INFO);
+                //Map<String, Object> auditInfo1 = exchange.getAttachment(AttachmentConstants.AUDIT_INFO);
                 if(auditInfo != null) {
                     if(auditConfig.getAuditList() != null && auditConfig.getAuditList().size() > 0) {
                         for(String name: auditConfig.getAuditList()) {

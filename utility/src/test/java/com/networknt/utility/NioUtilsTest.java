@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Network New Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -16,10 +16,13 @@
 
 package com.networknt.utility;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Created by steve on 12/07/17.
@@ -42,6 +45,22 @@ public class NioUtilsTest {
     public void testUnzip() throws IOException {
         URL url = Thread.currentThread().getContextClassLoader().getResource("rest.zip");
         NioUtils.unzip(url.getPath().toString().replace("/C:/","C:\\"), NioUtils.getTempDir());
+    }
+
+    @Test
+    public void testToByteBuffer1() {
+        String s = "こんにちは";
+        ByteBuffer bb = NioUtils.toByteBuffer(s);
+        String n = new String(bb.array(), StandardCharsets.UTF_8);
+        Assert.assertEquals(s, n);
+    }
+
+    @Test
+    public void testToByteBuffer2() {
+        String s = "obufscate thdé alphebat and yolo!!";
+        ByteBuffer bb = NioUtils.toByteBuffer(s);
+        String n = new String(bb.array(), StandardCharsets.UTF_8);
+        Assert.assertEquals(s, n);
     }
 
 }

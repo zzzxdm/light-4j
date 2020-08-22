@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Network New Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -40,10 +40,9 @@ import org.xnio.OptionMap;
 
 import java.io.File;
 import java.io.PrintWriter;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
-import java.net.URLClassLoader;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -58,15 +57,19 @@ public class ServerInfoDisabledTest {
     static Undertow server = null;
     static String homeDir = System.getProperty("user.home");
 
+    static ClassLoader classLoader;
+
     @BeforeClass
     public static void setUp() throws Exception {
         // inject in memory constructed info.json to homeDir as classpath
         Config.getInstance().clear();
         Map<String, Object> map = new HashMap<>();
         map.put("enableServerInfo", false);
-        Config.getInstance().getYaml().dump(map, new PrintWriter(new File(homeDir + "/info.yml")));
+        Config.getInstance().getYaml().dump(map, new PrintWriter(new File(homeDir + "/info.yml"), Charset.defaultCharset().name()));
         // Add home directory to the classpath of the system class loader.
-        addURL(new File(homeDir).toURI().toURL());
+        AppURLClassLoader classLoader = new AppURLClassLoader(new URL[0], ClassLoader.getSystemClassLoader());
+        classLoader.addURL(new File(homeDir).toURI().toURL());
+        Config.getInstance().setClassLoader(classLoader);
 
         if(server == null) {
             logger.info("starting server");
@@ -97,16 +100,6 @@ public class ServerInfoDisabledTest {
         Config.getInstance().clear();
     }
 
-    static void addURL(URL url) throws Exception {
-        URLClassLoader classLoader
-                = (URLClassLoader) ClassLoader.getSystemClassLoader();
-        Class clazz = URLClassLoader.class;
-        // Use reflection
-        Method method = clazz.getDeclaredMethod("addURL", URL.class);
-        method.setAccessible(true);
-        method.invoke(classLoader, url);
-    }
-
     static RoutingHandler getTestHandler() {
         return Handlers.routing().add(Methods.GET, "/v1/server/info", new ServerInfoGetHandler());
     }
@@ -117,7 +110,7 @@ public class ServerInfoDisabledTest {
         final CountDownLatch latch = new CountDownLatch(1);
         final ClientConnection connection;
         try {
-            connection = client.connect(new URI("http://localhost:8080"), Http2Client.WORKER, Http2Client.SSL, Http2Client.BUFFER_POOL, OptionMap.EMPTY).get();
+            connection = client.connect(new URI("http://localhost:8080"), Http2Client.WORKER, Http2Client.BUFFER_POOL, OptionMap.EMPTY).get();
         } catch (Exception e) {
             throw new ClientException(e);
         }

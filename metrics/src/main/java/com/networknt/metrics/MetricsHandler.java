@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Network New Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -20,6 +20,7 @@ import com.networknt.audit.AuditHandler;
 import com.networknt.config.Config;
 import com.networknt.handler.Handler;
 import com.networknt.handler.MiddlewareHandler;
+import com.networknt.httpstring.AttachmentConstants;
 import com.networknt.server.Server;
 import com.networknt.utility.Constants;
 import com.networknt.utility.ModuleRegistry;
@@ -75,6 +76,10 @@ public class MetricsHandler implements MiddlewareHandler {
                         .filter(MetricFilter.ALL)
                         .build(influxDb);
                 reporter.start(config.getReportInMinutes(), TimeUnit.MINUTES);
+                if (config.enableJVMMonitor) {
+                    createJVMMetricsReporter(influxDb);
+                }
+
                 logger.info("metrics is enabled and reporter is started");
             } catch (Exception e) {
                 // if there are any exception, chances are influxdb is not available. disable this handler.
@@ -118,7 +123,7 @@ public class MetricsHandler implements MiddlewareHandler {
     public void handleRequest(final HttpServerExchange exchange) throws Exception {
         long startTime = Clock.defaultClock().getTick();
         exchange.addExchangeCompleteListener((exchange1, nextListener) -> {
-            Map<String, Object> auditInfo = exchange1.getAttachment(AuditHandler.AUDIT_INFO);
+            Map<String, Object> auditInfo = exchange1.getAttachment(AttachmentConstants.AUDIT_INFO);
             if(auditInfo != null) {
                 Map<String, String> tags = new HashMap<>();
                 tags.put("endpoint", (String)auditInfo.get(Constants.ENDPOINT_STRING));
@@ -165,4 +170,18 @@ public class MetricsHandler implements MiddlewareHandler {
         }
     }
 
+    private static void createJVMMetricsReporter(final InfluxDbSender influxDb) {
+        Map<String, String> commonTags = new HashMap<>();
+
+        commonTags.put("apiName", Server.config.getServiceId());
+        commonTags.put("environment", Server.config.getEnvironment());
+        InetAddress inetAddress = Util.getInetAddress();
+        // On Docker for Mac, inetAddress will be null as there is a bug.
+        commonTags.put("ipAddress", inetAddress == null ? "unknown" : inetAddress.getHostAddress());
+        commonTags.put("hostname", inetAddress == null ? "unknown" : inetAddress.getHostName()); // will be container id if in docker.
+
+        JVMMetricsInfluxDbReporter jvmReporter = new JVMMetricsInfluxDbReporter(new MetricRegistry(), influxDb, "jvmInfluxDb-reporter",
+                MetricFilter.ALL, TimeUnit.SECONDS, TimeUnit.MILLISECONDS, commonTags);
+        jvmReporter.start(config.getReportInMinutes(), TimeUnit.MINUTES);
+    }
 }

@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Network New Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -45,7 +45,9 @@ public class ConfigClassPathTest extends TestCase {
         config.getMapper().writeValue(new File(homeDir + "/test.json"), map);
 
         // Add home directory to the classpath of the system class loader.
-        addURL(new File(homeDir).toURI().toURL());
+        AppURLClassLoader classLoader = new AppURLClassLoader(new URL[0], ClassLoader.getSystemClassLoader());
+        classLoader.addURL(new File(homeDir).toURI().toURL());
+        config.setClassLoader(classLoader);
     }
 
     @Override
@@ -62,6 +64,7 @@ public class ConfigClassPathTest extends TestCase {
         Assert.assertEquals("classpath", configMap.get("value"));
     }
 
+    @SuppressWarnings("unchecked")
     private void addURL(URL url) throws Exception {
         URLClassLoader classLoader
                 = (URLClassLoader) ClassLoader.getSystemClassLoader();

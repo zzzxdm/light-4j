@@ -7,6 +7,7 @@ dist/
 .project
 .classpath
 .settings
+.attach_*
 .metadata/
 *.iml
 *.log
@@ -20,3 +21,4 @@ hs_err_pid*
 !rest.zip
 
 .DS_Store
+build.out

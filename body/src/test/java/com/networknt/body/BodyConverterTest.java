@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2019 Network New Technologies Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.networknt.body;
 
 import io.undertow.server.handlers.form.FormData;
@@ -32,15 +47,13 @@ public class BodyConverterTest {
 
         Assert.assertEquals(2, bodyMap.size());
 
-        List<Object> aConvertedListvalue = (List<Object>) bodyMap.get(aKey);
-        Assert.assertEquals(1, aConvertedListvalue.size());
-        Assert.assertTrue(aConvertedListvalue.get(0) instanceof FormData.FormValue);
-        Assert.assertEquals(aValue, ((FormData.FormValue)aConvertedListvalue.get(0)).getValue());
+        Object aConvertedListvalue = bodyMap.get(aKey);
+        Assert.assertTrue(aConvertedListvalue instanceof String);
+        Assert.assertEquals(aValue, aConvertedListvalue);
 
-        List<Object> anotherListvalues = (List<Object>) bodyMap.get(anotherKey);
-        Assert.assertEquals(1, anotherListvalues.size());
-        Assert.assertTrue(anotherListvalues.get(0) instanceof FormData.FormValue);
-        Assert.assertEquals(anotherValue, ((FormData.FormValue)anotherListvalues.get(0)).getValue());
+        Object anotherListvalues = bodyMap.get(anotherKey);
+        Assert.assertTrue(anotherListvalues instanceof String);
+        Assert.assertEquals(anotherValue, anotherListvalues);
     }
 
     @Test
@@ -60,10 +73,10 @@ public class BodyConverterTest {
         List<Object> aConvertedListvalue = (List<Object>) bodyMap.get(aKey);
         Assert.assertEquals(2, aConvertedListvalue.size());
 
-        Assert.assertTrue(aConvertedListvalue.get(0) instanceof FormData.FormValue);
-        Assert.assertEquals(aValue, ((FormData.FormValue)aConvertedListvalue.get(0)).getValue());
+        Assert.assertTrue(aConvertedListvalue.get(0) instanceof String);
+        Assert.assertEquals(aValue, aConvertedListvalue.get(0));
 
-        Assert.assertTrue(aConvertedListvalue.get(1) instanceof FormData.FormValue);
-        Assert.assertEquals(anotherValue, ((FormData.FormValue)aConvertedListvalue.get(1)).getValue());
+        Assert.assertTrue(aConvertedListvalue.get(1) instanceof String);
+        Assert.assertEquals(anotherValue, aConvertedListvalue.get(1));
     }
 }

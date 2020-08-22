@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Network New Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -16,7 +16,6 @@
 
 package com.networknt.db;
 
-import com.networknt.common.DecryptUtil;
 import com.networknt.config.Config;
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -34,7 +33,7 @@ import java.util.Map;
 public class GenericDataSource {
     protected static final String DATASOURCE = "datasource";
     protected static final String SECRET = "secret";
-    private static final String DB_PASSWORD = "dbPassword";
+    private static final String DB_PASSWORD = "password";
     private static final String DS_NAME = "H2DataSource";
 
     // the HikariDataSource
@@ -65,7 +64,7 @@ public class GenericDataSource {
         Map<String, Object> dataSourceMap = Config.getInstance().getJsonMapConfig(DATASOURCE);
 
         // get the decrypted secret file
-        Map<String, Object> secret = DecryptUtil.decryptMap(Config.getInstance().getJsonMapConfig(SECRET));
+        Map<String, Object> secret = Config.getInstance().getJsonMapConfig(SECRET);
 
         // get the requested datasource
         Map<String, Object> mainParams = (Map<String, Object>) dataSourceMap.get(getDsName());
@@ -77,7 +76,11 @@ public class GenericDataSource {
         ds.setUsername((String)mainParams.get("username"));
 
         // use encrypted password
-        ds.setPassword((String)secret.get(getDbPassKey()));
+        String password = (String)mainParams.get(DB_PASSWORD);
+        if (password==null) {
+            password = (String)secret.get(getDbPassKey());
+        }
+        ds.setPassword(password);
 
         // set datasource paramters
         ds.setMaximumPoolSize((Integer)mainParams.get("maximumPoolSize"));

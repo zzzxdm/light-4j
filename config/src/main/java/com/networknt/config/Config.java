@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Network New Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -16,17 +16,35 @@
 
 package com.networknt.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.concurrent.ConcurrentHashMap;
+
+import com.networknt.config.yml.ConfigLoaderConstructor;
 import org.owasp.encoder.Encode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.representer.Representer;
+import org.yaml.snakeyaml.resolver.Resolver;
 
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.networknt.config.yml.DecryptConstructor;
+import com.networknt.config.yml.YmlConstants;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * A injectable singleton config that has default implementation
@@ -51,17 +69,27 @@ public abstract class Config {
 
     public abstract Map<String, Object> getJsonMapConfig(String configName);
 
+    public abstract Map<String, Object> getDefaultJsonMapConfig(String configName);
+
     public abstract Map<String, Object> getJsonMapConfig(String configName, String path);
+
+    public abstract Map<String, Object> getDefaultJsonMapConfig(String configName, String path);
 
     public abstract Map<String, Object> getJsonMapConfigNoCache(String configName);
 
+    public abstract Map<String, Object> getDefaultJsonMapConfigNoCache(String configName);
+
     public abstract Map<String, Object> getJsonMapConfigNoCache(String configName, String path);
 
-    // public abstract JsonNode getJsonNodeConfig(String configName);
+    public abstract Map<String, Object> getDefaultJsonMapConfigNoCache(String configName, String path);
 
     public abstract Object getJsonObjectConfig(String configName, Class clazz);
 
+    public abstract Object getDefaultJsonObjectConfig(String configName, Class clazz);
+
     public abstract Object getJsonObjectConfig(String configName, Class clazz, String path);
+
+    public abstract Object getDefaultJsonObjectConfig(String configName, Class clazz, String path);
 
     public abstract String getStringFromFile(String filename);
 
@@ -75,11 +103,16 @@ public abstract class Config {
 
     public abstract void clear();
 
+    public abstract void setClassLoader(ClassLoader urlClassLoader);
+
+    public abstract void putInConfigCache(String configName, Object config);
+
     public static Config getInstance() {
         return FileConfigImpl.DEFAULT;
     }
 
     private static final class FileConfigImpl extends Config {
+    	static final String CONFIG_NAME = "config";
         static final String CONFIG_EXT_JSON = ".json";
         static final String CONFIG_EXT_YAML = ".yaml";
         static final String CONFIG_EXT_YML = ".yml";
@@ -87,13 +120,19 @@ public abstract class Config {
 
         static final Logger logger = LoggerFactory.getLogger(Config.class);
 
-        public final String[] EXTERNALIZED_PROPERTY_DIR = System.getProperty(LIGHT_4J_CONFIG_DIR, "").split(":");
+        public final String[] EXTERNALIZED_PROPERTY_DIR = System.getProperty(LIGHT_4J_CONFIG_DIR, "").split(File.pathSeparator);
 
         private long cacheExpirationTime = 0L;
 
+        private String configLoaderClass;
+
+        private ConfigLoader configLoader;
+
+        private ClassLoader classLoader;
+
         private static final Config DEFAULT = initialize();
 
-        // Memory cache of all the configuration object. Each config will be loaded on the first time is is accessed.
+        // Memory cache of all the configuration object. Each config will be loaded on the first time it is accessed.
         final Map<String, Object> configCache = new ConcurrentHashMap<>(10, 0.9f, 1);
 
         // An instance of Jackson ObjectMapper that can be used anywhere else for Json.
@@ -103,8 +142,21 @@ public abstract class Config {
             mapper.registerModule(new JavaTimeModule());
             mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         }
-
-        final Yaml yaml = new Yaml();
+        
+        final Yaml yaml;
+        
+        FileConfigImpl(){
+        	super();
+        	String decryptorClass = getDecryptorClass();
+        	configLoaderClass = getConfigLoaderClass();
+        	if (null==decryptorClass || decryptorClass.trim().isEmpty()) {
+        		yaml = new Yaml();
+        	}else {
+	            final Resolver resolver = new Resolver();
+	            resolver.addImplicitResolver(YmlConstants.CRYPT_TAG, YmlConstants.CRYPT_PATTERN, YmlConstants.CRYPT_FIRST);
+	        	yaml = new Yaml(new DecryptConstructor(decryptorClass), new Representer(), new DumperOptions(), resolver);
+        	}
+        }
 
         private static Config initialize() {
             Iterator<Config> it;
@@ -129,8 +181,23 @@ public abstract class Config {
         }
 
         @Override
+        public void setClassLoader(ClassLoader classLoader) {
+            this.classLoader = classLoader;
+        }
+
+        private ClassLoader getClassLoader() {
+            if (this.classLoader != null) {
+                return this.classLoader;
+            }
+            return getClass().getClassLoader();
+        }
+
+        public void putInConfigCache(String configName, Object config) {
+            configCache.put(configName,config);
+        }
+
+        @Override
         public String getStringFromFile(String filename, String path) {
-            checkCacheExpiration();
             String content = (String) configCache.get(filename);
             if (content == null) {
                 synchronized (FileConfigImpl.class) {
@@ -154,9 +221,38 @@ public abstract class Config {
             return getConfigStream(filename, "");
         }
 
+        /**
+         * Method used to load the configuration file as a given Object based on the config loader class configured in config.yml and cache it.
+         * If no config loader is configured, file will be loaded by default loading method.
+         * @param configName    The name of the config file, without an extension
+         * @param clazz         The class that the object will be deserialized into
+         * @param path          The relative directory or absolute directory that config will be loaded from
+         * @return An instance of the object if possible, null otherwise. IOExceptions smothered.
+         */
         @Override
         public Object getJsonObjectConfig(String configName, Class clazz, String path) {
-            checkCacheExpiration();
+            Object config = configCache.get(configName);
+            if (config == null) {
+                synchronized (FileConfigImpl.class) {
+                    config = configCache.get(configName);
+                    if (config == null) {
+                        config = loadJsonObjectConfigWithSpecificConfigLoader(configName, clazz, path);
+                        if (config != null) configCache.put(configName, config);
+                    }
+                }
+            }
+            return config;
+        }
+
+        /**
+         * Method used to load the configuration file as a given Object by using default loading method and cache it.
+         * @param configName    The name of the config file, without an extension
+         * @param clazz         The class that the object will be deserialized into
+         * @param path          The relative directory or absolute directory that config will be loaded from
+         * @return An instance of the object if possible, null otherwise. IOExceptions smothered.
+         */
+        @Override
+        public Object getDefaultJsonObjectConfig(String configName, Class clazz, String path) {
             Object config = configCache.get(configName);
             if (config == null) {
                 synchronized (FileConfigImpl.class) {
@@ -170,14 +266,59 @@ public abstract class Config {
             return config;
         }
 
+        /**
+         * Method used to load the configuration file as a given Object based on the config loader class configured in config.yml and cache it.
+         * If no config loader is configured, file will be loaded by default loading method.
+         * @param configName    The name of the config file, without an extension
+         * @param clazz         The class that the object will be deserialized into
+         * @return An instance of the object if possible, null otherwise. IOExceptions smothered.
+         */
         @Override
         public Object getJsonObjectConfig(String configName, Class clazz) {
             return getJsonObjectConfig(configName, clazz, "");
         }
 
+        /**
+         * Method used to load the configuration file as a given Object by using default loading method and cache it.
+         * @param configName    The name of the config file, without an extension
+         * @param clazz         The class that the object will be deserialized into
+         * @return An instance of the object if possible, null otherwise. IOExceptions smothered.
+         */
+        @Override
+        public Object getDefaultJsonObjectConfig(String configName, Class clazz) {
+            return getDefaultJsonObjectConfig(configName, clazz, "");
+        }
+
+        /**
+         * Method used to load the configuration file as a map based on the config loader class configured in config.yml and cache it.
+         * If no config loader is configured, file will be loaded by default loading method.
+         * @param configName    The name of the config file, without an extension
+         * @param path          The relative directory or absolute directory that config will be loaded from
+         * @return A map of the config fields if possible, null otherwise. IOExceptions smothered.
+         */
         @Override
         public Map<String, Object> getJsonMapConfig(String configName, String path) {
-            checkCacheExpiration();
+            Map<String, Object> config = (Map<String, Object>) configCache.get(configName);
+            if (config == null) {
+                synchronized (FileConfigImpl.class) {
+                    config = (Map<String, Object>) configCache.get(configName);
+                    if (config == null) {
+                        config = loadJsonMapConfigWithSpecificConfigLoader(configName, path);
+                        if (config != null) configCache.put(configName, config);
+                    }
+                }
+            }
+            return config;
+        }
+
+        /**
+         * Method used to load the configuration file as a map by using default loading method and cache it.
+         * @param configName    The name of the config file, without an extension
+         * @param path          The relative directory or absolute directory that config will be loaded from
+         * @return A map of the config fields if possible, null otherwise. IOExceptions smothered.
+         */
+        @Override
+        public Map<String, Object> getDefaultJsonMapConfig(String configName, String path) {
             Map<String, Object> config = (Map<String, Object>) configCache.get(configName);
             if (config == null) {
                 synchronized (FileConfigImpl.class) {
@@ -191,19 +332,69 @@ public abstract class Config {
             return config;
         }
 
+        /**
+         * Method used to load the configuration file as a map based on the config loader class configured in config.yml and cache it.
+         * If no config loader is configured, file will be loaded by default loading method.
+         * @param configName    The name of the config file, without an extension
+         * @return A map of the config fields if possible, null otherwise. IOExceptions smothered.
+         */
         @Override
         public Map<String, Object> getJsonMapConfig(String configName) {
             return getJsonMapConfig(configName, "");
         }
 
+        /**
+         * Method used to load the configuration file as a map by using default loading method and cache it.
+         * @param configName    The name of the config file, without an extension
+         * @return A map of the config fields if possible, null otherwise. IOExceptions smothered.
+         */
+        @Override
+        public Map<String, Object> getDefaultJsonMapConfig(String configName) {
+            return getDefaultJsonMapConfig(configName, "");
+        }
+
+        /**
+         * Method used to load the configuration file as a map based on the config loader class configured in config.yml without caching.
+         * If no config loader is configured, file will be loaded by default loading method.
+         * @param configName    The name of the config file, without an extension
+         * @param path          The relative directory or absolute directory that config will be loaded from
+         * @return A map of the config fields if possible, null otherwise. IOExceptions smothered.
+         */
         @Override
         public Map<String, Object> getJsonMapConfigNoCache(String configName, String path) {
+            return loadJsonMapConfigWithSpecificConfigLoader(configName, path);
+        }
+
+        /**
+         * Method used to load the configuration file as a map by using default loading method without caching.
+         * @param configName    The name of the config file, without an extension
+         * @param path          The relative directory or absolute directory that config will be loaded from
+         * @return A map of the config fields if possible, null otherwise. IOExceptions smothered.
+         */
+        @Override
+        public Map<String, Object> getDefaultJsonMapConfigNoCache(String configName, String path) {
             return loadMapConfig(configName, path);
         }
 
+        /**
+         * Method used to load the configuration file as a map based on the config loader class configured in config.yml without caching.
+         * If no config loader is configured, file will be loaded by default loading method.
+         * @param configName    The name of the config file, without an extension
+         * @return A map of the config fields if possible, null otherwise. IOExceptions smothered.
+         */
         @Override
         public Map<String, Object> getJsonMapConfigNoCache(String configName) {
             return getJsonMapConfigNoCache(configName, "");
+        }
+
+        /**
+         * Method used to load the configuration file as a map by using default loading method without caching.
+         * @param configName    The name of the config file, without an extension
+         * @return A map of the config fields if possible, null otherwise. IOExceptions smothered.
+         */
+        @Override
+        public Map<String, Object> getDefaultJsonMapConfigNoCache(String configName) {
+            return getDefaultJsonMapConfigNoCache(configName, "");
         }
 
         private String loadStringFromFile(String filename, String path) {
@@ -251,8 +442,9 @@ public abstract class Config {
                         config = CentralizedManagement.mergeObject(configMap, clazz);
                     }
                 }
-            } catch (IOException ioe) {
-                logger.error("IOException", ioe);
+            } catch (Exception e) {
+                logger.error("Exception", e);
+                throw new RuntimeException("Unable to load " + fileName + " as object.", e);
             }
             return config;
         }
@@ -283,12 +475,14 @@ public abstract class Config {
                         CentralizedManagement.mergeMap(config); // mutates the config map in place.
                     }
                 }
-            } catch (IOException ioe) {
-                logger.error("IOException", ioe);
+            } catch (Exception e) {
+                logger.error("Exception", e);
+                throw new RuntimeException("Unable to load " + ymlFilename + " as map.", e);
             }
             return config;
         }
-
+        
+        
         private Map<String, Object> loadMapConfig(String configName, String path) {
             Map<String, Object> config;
             for (String extension : configExtensionsOrdered) {
@@ -324,14 +518,14 @@ public abstract class Config {
             if (logger.isInfoEnabled()) {
                 logger.info("Trying to load config from classpath directory for file " + Encode.forJava(configFilename));
             }
-            inStream = getClass().getClassLoader().getResourceAsStream(configFilename);
+            inStream = this.getClassLoader().getResourceAsStream(configFilename);
             if (inStream != null) {
                 if (logger.isInfoEnabled()) {
                     logger.info("config loaded from classpath for " + Encode.forJava(configFilename));
                 }
                 return inStream;
             }
-            inStream = getClass().getClassLoader().getResourceAsStream("config/" + configFilename);
+            inStream = this.getClassLoader().getResourceAsStream("config/" + configFilename);
             if (inStream != null) {
                 if (logger.isInfoEnabled()) {
                     logger.info("Config loaded from default folder for " + Encode.forJava(configFilename));
@@ -342,7 +536,7 @@ public abstract class Config {
                 logger.info("Unable to load config " + Encode.forJava(configFilename) + ". Looking for the same file name with extension yaml...");
             } else if (configFilename.endsWith(CONFIG_EXT_YAML)) {
                 logger.info("Unable to load config " + Encode.forJava(configFilename) + ". Looking for the same file name with extension json...");
-            } else {
+            } else if (configFilename.endsWith(CONFIG_EXT_JSON)) {
                 System.out.println("Unable to load config '" + Encode.forJava(configFilename.substring(0, configFilename.indexOf("."))) + "' with extension yml, yaml and json from external config, application config and module config. Please ignore this message if you are sure that your application is not using this config file.");
             }
             return null;
@@ -358,14 +552,6 @@ public abstract class Config {
             return cal.getTimeInMillis();
         }
 
-        private void checkCacheExpiration() {
-            if (System.currentTimeMillis() > cacheExpirationTime) {
-                clear();
-                logger.info("daily config cache refresh");
-                cacheExpirationTime = getNextMidNightTime();
-            }
-        }
-
         // private method used to get absolute directory, input path can be absolute or relative
         private String getAbsolutePath(String path, int index) {
             if (path.startsWith("/")) {
@@ -373,6 +559,117 @@ public abstract class Config {
             } else {
                 return path.equals("") ? EXTERNALIZED_PROPERTY_DIR[index].trim() : EXTERNALIZED_PROPERTY_DIR[index].trim() + "/" + path;
             }
+        }
+
+        private String getDecryptorClass() {
+            Map<String, Object> config = loadModuleConfig();
+            if (null != config) {
+                String decryptorClass = (String) config.get(DecryptConstructor.CONFIG_ITEM_DECRYPTOR_CLASS);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("found decryptorClass={}", decryptorClass);
+                }
+                return decryptorClass == null ? DecryptConstructor.DEFAULT_DECRYPTOR_CLASS : decryptorClass;
+            }else {
+                logger.warn("config file cannot be found.");
+            }
+            return DecryptConstructor.DEFAULT_DECRYPTOR_CLASS;
+        }
+
+        private String getConfigLoaderClass() {
+            Map<String, Object> config = loadModuleConfig();
+            if (null != config) {
+                String configLoaderClass = (String) config.get(ConfigLoaderConstructor.CONFIG_LOADER_CLASS);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("found configLoaderClass={}", configLoaderClass);
+                }
+                return configLoaderClass;
+            }else {
+                logger.warn("config file cannot be found.");
+            }
+            return null;
+        }
+
+        private Map<String, Object> loadModuleConfigNoCache() {
+            Yaml yml = new Yaml();
+
+            Map<String, Object> config = null;
+            for (String extension : configExtensionsOrdered) {
+                String ymlFilename = CONFIG_NAME + extension;
+                try (InputStream inStream = getConfigStream(ymlFilename, "")) {
+                    if (inStream != null) {
+                        config = yml.load(inStream);
+                    }
+                } catch (IOException ioe) {
+                    logger.error("IOException", ioe);
+                }
+
+                if (config != null) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("loaded config from file {}", ymlFilename);
+                    }
+
+                    break;
+                }
+            }
+            return config;
+        }
+
+        private Map<String, Object> loadModuleConfig() {
+            Map<String, Object> config = (Map<String, Object>) configCache.get(CONFIG_NAME);
+            if (config == null) {
+                synchronized (FileConfigImpl.class) {
+                    config = (Map<String, Object>) configCache.get(CONFIG_NAME);
+                    if (config == null) {
+                        config = loadModuleConfigNoCache();
+                        if (config != null) configCache.put(CONFIG_NAME, config);
+                    }
+                }
+            }
+            return config;
+        }
+
+        private Map<String, Object> loadJsonMapConfigWithSpecificConfigLoader(String configName, String path) {
+            Map<String, Object> config = null;
+            // Initialize config loader
+            if (configLoaderClass != null && this.configLoader == null) {
+                this.configLoader = new ConfigLoaderConstructor(configLoaderClass).getConfigLoader();
+            }
+            if (configLoader != null) {
+                logger.info("Trying to load {} with extension yaml, yml or json by using ConfigLoader: {}.", configName, configLoader.getClass().getName());
+                if (path == null || path.equals("")) {
+                    config = configLoader.loadMapConfig(configName);
+                } else {
+                    config = configLoader.loadMapConfig(configName, path);
+                }
+            }
+            // Fall back to default loading method if the configuration cannot be loaded by specific config loader
+            if (config == null) {
+                logger.info("Trying to load {} with extension yaml, yml or json by using default loading method.", configName);
+                config = loadMapConfig(configName, path);
+            }
+            return config;
+        }
+
+        private Object loadJsonObjectConfigWithSpecificConfigLoader(String configName, Class clazz, String path) {
+            Object config = null;
+            // Initialize config loader
+            if (configLoaderClass != null && this.configLoader == null) {
+                this.configLoader = new ConfigLoaderConstructor(configLoaderClass).getConfigLoader();
+            }
+            if (this.configLoader != null) {
+                logger.info("Trying to load {} with extension yaml, yml or json by using ConfigLoader: {}.", configName, configLoader.getClass().getName());
+                if (path == null || path.equals("")) {
+                    config = configLoader.loadObjectConfig(configName, clazz);
+                } else {
+                    config = configLoader.loadObjectConfig(configName, clazz, path);
+                }
+            }
+            // Fall back to default loading method if the configuration cannot be loaded by specific config loader
+            if (config == null) {
+                logger.info("Trying to load {} with extension yaml, yml or json by using default loading method.", configName);
+                config = loadObjectConfig(configName, clazz, path);
+            }
+            return config;
         }
     }
 
@@ -382,7 +679,7 @@ public abstract class Config {
     }
 
     static InputStream convertStringToStream(String string) {
-        return new ByteArrayInputStream(string.getBytes());
+        return new ByteArrayInputStream(string.getBytes(UTF_8));
     }
 }
 

@@ -6,3 +6,7 @@ TEST.map:
   key1: element1
   key2: element2
 TEST.null:
+TEST.emptyString: ""
+password.escapeValue: def$g
+password.sql1: SELECT JSON_VALUE(abc, '\$.foo.bar') FROM def
+password.sql2: SELECT JSON_VALUE(abc, '$.foo.bar') FROM def

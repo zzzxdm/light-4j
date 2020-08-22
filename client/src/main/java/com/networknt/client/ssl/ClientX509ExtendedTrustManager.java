@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Network New Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -138,8 +138,8 @@ public class ClientX509ExtendedTrustManager extends X509ExtendedTrustManager imp
 	 * 
 	 * Notes: this method should only be applied to verify server certificates on the client side.
 	 * 
-	 * @param cert
-	 * @throws CertificateException
+	 * @param cert X509Certificate
+	 * @throws CertificateException CertificateException
 	 */
 	private void doCustomServerIdentityCheck(X509Certificate cert) throws CertificateException{
 		if (EndpointIdentificationAlgorithm.APIS == identityAlg) {
@@ -168,8 +168,8 @@ public class ClientX509ExtendedTrustManager extends X509ExtendedTrustManager imp
 	 * 
 	 * This method can be applied to both clients and servers.
 	 * 
-	 * @param session
-	 * @param cert
+	 * @param session SSLSession
+	 * @param cert X509Certificate
 	 * @throws CertificateException
 	 */
 	private void checkIdentity(SSLSession session, X509Certificate cert) throws CertificateException {
@@ -186,9 +186,9 @@ public class ClientX509ExtendedTrustManager extends X509ExtendedTrustManager imp
 	/**
 	 * This method converts existing X509TrustManagers to ClientX509ExtendedTrustManagers. 
 	 * 
-	 * @param trustManagers
-	 * @param tlsConfig
-	 * @return
+	 * @param trustManagers array of TrustManagers
+	 * @param tlsConfig TLSConfig
+	 * @return TrustManager array
 	 */
 	public static TrustManager[] decorate(TrustManager[] trustManagers, TLSConfig tlsConfig) {
 		if (null!=trustManagers && trustManagers.length>0) {

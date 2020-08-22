@@ -2,7 +2,7 @@
  * Copyright 2010-2013 Coda Hale and Yammer, Inc., 2014-2017 Dropwizard Team
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -18,6 +18,7 @@ package io.dropwizard.metrics;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * A meter metric which measures mean throughput and one-, five-, and fifteen-minute
@@ -32,7 +33,7 @@ public class Meter implements Metered {
     private final EWMA m5Rate = EWMA.fiveMinuteEWMA();
     private final EWMA m15Rate = EWMA.fifteenMinuteEWMA();
 
-    private final LongAdder count = LongAdderFactory.create();
+    private final LongAdder count = new LongAdder();
     private final long startTime;
     private final AtomicLong lastTick;
     private final Clock clock;

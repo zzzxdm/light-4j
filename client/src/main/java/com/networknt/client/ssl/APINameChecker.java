@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Network New Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -47,9 +47,9 @@ public class APINameChecker {
 	/**
 	 * Perform server identify check using given name and throw CertificateException if the check fails.
 	 * 
-	 * @param name
-	 * @param cert
-	 * @throws CertificateException
+	 * @param name string
+	 * @param cert X509Certificate
+	 * @throws CertificateException CertificateException
 	 */
 	public static void verifyAndThrow(final String name, final X509Certificate cert) throws CertificateException{
 		if (!verify(name, cert)) {

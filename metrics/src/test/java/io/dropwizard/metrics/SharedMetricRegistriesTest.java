@@ -2,7 +2,7 @@
  * Copyright 2010-2013 Coda Hale and Yammer, Inc., 2014-2017 Dropwizard Team
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -28,17 +28,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
 public class SharedMetricRegistriesTest {
-    @Before
-    public void setUp() throws Exception {
-        // Unset the defaultRegistryName field between tests for better isolation.
-        final Field field = SharedMetricRegistries.class.getDeclaredField("defaultRegistryName");
-        field.setAccessible(true);
-        final Field modfiers = Field.class.getDeclaredField("modifiers");
-        modfiers.setAccessible(true);
-        modfiers.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-        field.set(null, null);
-        SharedMetricRegistries.clear();
-    }
 
     @Test
     public void memorizesRegistriesByName() throws Exception {
@@ -92,15 +81,6 @@ public class SharedMetricRegistriesTest {
     }
 
     @Test
-    public void createsDefaultRegistries() throws Exception {
-        final String defaultName = "default";
-        final MetricRegistry registry = SharedMetricRegistries.setDefault(defaultName);
-        assertThat(registry).isNotNull();
-        assertThat(SharedMetricRegistries.getDefault()).isEqualTo(registry);
-        assertThat(SharedMetricRegistries.getOrCreate(defaultName)).isEqualTo(registry);
-    }
-
-    @Test
     public void errorsWhenDefaultAlreadySet() throws Exception {
         try {
             SharedMetricRegistries.setDefault("foobah");
@@ -111,12 +91,4 @@ public class SharedMetricRegistriesTest {
         }
     }
 
-    @Test
-    public void setsDefaultExistingRegistries() throws Exception {
-        final String defaultName = "default";
-        final MetricRegistry registry = new MetricRegistry();
-        assertThat(SharedMetricRegistries.setDefault(defaultName, registry)).isEqualTo(registry);
-        assertThat(SharedMetricRegistries.getDefault()).isEqualTo(registry);
-        assertThat(SharedMetricRegistries.getOrCreate(defaultName)).isEqualTo(registry);
-    }
 }

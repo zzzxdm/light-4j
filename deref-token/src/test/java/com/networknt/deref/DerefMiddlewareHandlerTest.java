@@ -1,15 +1,28 @@
+/*
+ * Copyright (c) 2016 Network New Technologies Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.networknt.deref;
 
 import com.networknt.client.Http2Client;
 import com.networknt.exception.ClientException;
-import com.networknt.utility.Constants;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.client.ClientConnection;
 import io.undertow.client.ClientRequest;
 import io.undertow.client.ClientResponse;
 import io.undertow.server.HttpHandler;
-import io.undertow.server.RoutingHandler;
 import io.undertow.server.handlers.PathHandler;
 import io.undertow.util.Headers;
 import io.undertow.util.Methods;

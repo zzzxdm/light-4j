@@ -1,26 +1,25 @@
 /*
- * Copyright (c) 2016 Network New Technologies Inc.
+ *  Copyright 2009-2016 Weibo, Inc.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *        http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 
 package com.networknt.consul;
 
-import com.networknt.registry.URLImpl;
-import com.networknt.utility.Constants;
-import com.networknt.registry.URLParamType;
 import com.networknt.registry.URL;
-import com.networknt.utility.Util;
+import com.networknt.registry.URLImpl;
+import com.networknt.registry.URLParamType;
+import com.networknt.utility.Constants;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,13 +29,16 @@ import java.util.Map;
 public class ConsulUtils {
 
     /**
-     * Check if two lists have the same urls. If any list is empty, return false
+     * Check if two lists have the same urls.
      *
      * @param urls1 first url list
      * @param urls2 second url list
      * @return boolean true when they are the same
      */
     public static boolean isSame(List<URL> urls1, List<URL> urls2) {
+        if(urls1 == null && urls2 == null) {
+            return true;
+        }
         if (urls1 == null || urls2 == null) {
             return false;
         }
@@ -68,18 +70,21 @@ public class ConsulUtils {
 
     /**
      * build url from service
-     *
+     * @param protocol the protocol of the service
      * @param service consul service
      * @return URL object
      */
-    public static URL buildUrl(ConsulService service) {
+    public static URL buildUrl(String protocol, ConsulService service) {
         URL url = null;
         if (url == null) {
             Map<String, String> params = new HashMap<String, String>();
             //String group = service.getName();
             //params.put(URLParamType.group.getName(), group);
             //params.put(URLParamType.nodeType.getName(), Constants.NODE_TYPE_SERVICE);
-            url = new URLImpl(ConsulConstants.DEFAULT_PROTOCOL, service.getAddress(), service.getPort(),
+            if (!service.getTags().isEmpty()) {
+                params.put(URLParamType.environment.getName(), service.getTags().get(0));
+            }
+            url = new URLImpl(protocol, service.getAddress(), service.getPort(),
                     ConsulUtils.getPathFromServiceId(service.getId()), params);
         }
         return url;

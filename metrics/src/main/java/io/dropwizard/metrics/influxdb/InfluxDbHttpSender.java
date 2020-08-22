@@ -1,6 +1,8 @@
 /*
+ * Copyright 2010-2013 Coda Hale and Yammer, Inc., 2014-2017 Dropwizard Team
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -15,24 +17,18 @@
 package io.dropwizard.metrics.influxdb;
 
 import com.networknt.client.Http2Client;
-import com.networknt.config.Config;
 import com.networknt.exception.ClientException;
 import com.networknt.mask.Mask;
-import com.networknt.status.Status;
 import io.dropwizard.metrics.influxdb.data.InfluxDbPoint;
 import io.dropwizard.metrics.influxdb.data.InfluxDbWriteObject;
 import io.undertow.client.*;
 import io.undertow.util.Headers;
 import io.undertow.util.Methods;
-import io.undertow.util.StringReadChannelListener;
-import io.undertow.util.StringWriteChannelListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 
-import java.io.IOException;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.HashSet;

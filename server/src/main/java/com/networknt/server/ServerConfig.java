@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Network New Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -30,17 +30,31 @@ public class ServerConfig {
     boolean enableHttps;
     boolean enableHttp2;
     String keystoreName;
+    String keystorePass;
+    String keyPass;
     boolean enableTwoWayTls;
     String truststoreName;
+    String truststorePass;
     boolean enableRegistry;
     String serviceId;
+    String serviceName;    
     String environment;
     String buildNumber;
     boolean dynamicPort;
     int minPort;
     int maxPort;
+    int bufferSize;
+    int ioThreads;
+    int workerThreads;
+    int backlog;
+    boolean alwaysSetDate;
+    boolean allowUnescapedCharactersInUrl;
+    String serverString;
+    String bootstrapStoreName;
+    String bootstrapStorePass;
+    long maxTransferFileSize;
 
-    public ServerConfig() {
+	public ServerConfig() {
     }
 
     public String getIp() {
@@ -119,6 +133,30 @@ public class ServerConfig {
         this.truststoreName = truststoreName;
     }
 
+    public String getKeystorePass() {
+        return keystorePass;
+    }
+
+    public void setKeystorePass(String keystorePass) {
+        this.keystorePass = keystorePass;
+    }
+
+    public String getKeyPass() {
+        return keyPass;
+    }
+
+    public void setKeyPass(String keyPass) {
+        this.keyPass = keyPass;
+    }
+
+    public String getTruststorePass() {
+        return truststorePass;
+    }
+
+    public void setTruststorePass(String truststorePass) {
+        this.truststorePass = truststorePass;
+    }
+
     public boolean isEnableTwoWayTls() {
         return enableTwoWayTls;
     }
@@ -143,6 +181,14 @@ public class ServerConfig {
         this.serviceId = serviceId;
     }
 
+    public String getServiceName() {
+		return serviceName;
+	}
+
+	public void setServiceName(String serviceName) {
+		this.serviceName = serviceName;
+	}   
+	
     public boolean isEnableHttp2() {
         return enableHttp2;
     }
@@ -189,5 +235,85 @@ public class ServerConfig {
 
     public void setMaxPort(int maxPort) {
         this.maxPort = maxPort;
+    }
+
+    public int getBufferSize() {
+        return bufferSize;
+    }
+
+    public void setBufferSize(int bufferSize) {
+        this.bufferSize = bufferSize;
+    }
+
+    public int getIoThreads() {
+        return ioThreads;
+    }
+
+    public void setIoThreads(int ioThreads) {
+        this.ioThreads = ioThreads;
+    }
+
+    public int getWorkerThreads() {
+        return workerThreads;
+    }
+
+    public void setWorkerThreads(int workerThreads) {
+        this.workerThreads = workerThreads;
+    }
+
+    public int getBacklog() {
+        return backlog;
+    }
+
+    public void setBacklog(int backlog) {
+        this.backlog = backlog;
+    }
+
+    public boolean isAlwaysSetDate() {
+        return alwaysSetDate;
+    }
+
+    public void setAlwaysSetDate(boolean alwaysSetDate) {
+        this.alwaysSetDate = alwaysSetDate;
+    }
+
+    public String getServerString() {
+        return serverString;
+    }
+
+    public void setServerString(String serverString) {
+        this.serverString = serverString;
+    }
+
+    public boolean isAllowUnescapedCharactersInUrl() {
+        return allowUnescapedCharactersInUrl;
+    }
+
+    public void setAllowUnescapedCharactersInUrl(boolean allowUnescapedCharactersInUrl) {
+        this.allowUnescapedCharactersInUrl = allowUnescapedCharactersInUrl;
+    }
+
+    public String getBootstrapStoreName() {
+        return bootstrapStoreName;
+    }
+
+    public void setBootstrapStoreName(String bootstrapStoreName) {
+        this.bootstrapStoreName = bootstrapStoreName;
+    }
+
+    public String getBootstrapStorePass() {
+        return bootstrapStorePass;
+    }
+
+    public void setBootstrapStorePass(String bootstrapStorePass) {
+        this.bootstrapStorePass = bootstrapStorePass;
+    }
+
+    public long getMaxTransferFileSize() {
+        return maxTransferFileSize;
+    }
+
+    public void setMaxTransferFileSize(long maxTransferFileSize) {
+        this.maxTransferFileSize = maxTransferFileSize;
     }
 }

@@ -1,24 +1,25 @@
 /*
- * Copyright (c) 2016 Network New Technologies Inc.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2014 Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 package com.networknt.client;
 
 import com.networknt.config.Config;
 import com.networknt.httpstring.HttpStringConstants;
-import com.networknt.utility.Constants;
 import io.undertow.Undertow;
 import io.undertow.UndertowOptions;
 import io.undertow.client.*;
@@ -81,6 +82,8 @@ public class Http2ClientIT {
 
     private static XnioWorker worker;
 
+    private static ThreadGroup threadGroup = new ThreadGroup("http2-client-test");
+
     private static final URI ADDRESS;
 
 
@@ -98,14 +101,14 @@ public class Http2ClientIT {
         exchange.getResponseHeaders().put(Headers.CONTENT_LENGTH, message.length() + "");
         final Sender sender = exchange.getResponseSender();
         sender.send(message);
+        sender.close();
     }
 
     @BeforeClass
     public static void beforeClass() throws IOException {
         // Create xnio worker
         final Xnio xnio = Xnio.getInstance();
-        final XnioWorker xnioWorker = xnio.createWorker(null, Http2Client.DEFAULT_OPTIONS);
-        worker = xnioWorker;
+        worker = xnio.createWorker(threadGroup, Http2Client.DEFAULT_OPTIONS);
 
         if(server == null) {
             System.out.println("starting server");
@@ -125,6 +128,7 @@ public class Http2ClientIT {
                     .setServerOption(UndertowOptions.ALWAYS_SET_KEEP_ALIVE, false) //don't send a keep-alive header for HTTP/1.1 requests, as it is not required
                     .setServerOption(UndertowOptions.ALWAYS_SET_DATE, true)
                     .setServerOption(UndertowOptions.RECORD_REQUEST_START_TIME, false)
+                    .setSocketOption(Options.SSL_ENABLED_PROTOCOLS, Sequence.of("TLSv1.2"))
                     .setHandler(new PathHandler()
                             .addExactPath(MESSAGE, exchange -> sendMessage(exchange))
                             .addExactPath(KEY, exchange -> sendMessage(exchange))
@@ -188,13 +192,10 @@ public class Http2ClientIT {
     public static void afterClass() {
         worker.shutdown();
         if(server != null) {
+            System.out.println("Stopping server.");
             try {
-                Thread.sleep(100);
-            } catch (InterruptedException ignored) {
-            }
-            server.stop();
-            System.out.println("The server is stopped.");
-            try {
+                server.stop();
+                System.out.println("The server is stopped.");
                 Thread.sleep(100);
             } catch (InterruptedException ignored) {
             }
@@ -422,6 +423,7 @@ public class Http2ClientIT {
     }
     */
 
+    // FIXME Causes server.close to hang on JDK11.
     @Test
     public void testMultipleHttpGetSsl() throws Exception {
         //
@@ -429,7 +431,7 @@ public class Http2ClientIT {
 
         final List<AtomicReference<ClientResponse>> references = new CopyOnWriteArrayList<>();
         final CountDownLatch latch = new CountDownLatch(10);
-        SSLContext context = client.createSSLContext();
+        SSLContext context = Http2Client.createSSLContext();
         XnioSsl ssl = new UndertowXnioSsl(worker.getXnio(), OptionMap.EMPTY, Http2Client.BUFFER_POOL, context);
 
         final ClientConnection connection = client.connect(new URI("https://localhost:7778"), worker, ssl, Http2Client.BUFFER_POOL, OptionMap.EMPTY).get();
@@ -456,15 +458,11 @@ public class Http2ClientIT {
                 Assert.assertEquals("HTTP/1.1", reference.get().getProtocol().toString());
             }
         } finally {
-            connection.getIoThread().execute(new Runnable() {
-                @Override
-                public void run() {
-                    IoUtils.safeClose(connection);
-                }
-            });
+            IoUtils.safeClose(connection);
         }
     }
 
+    // FIXME Causes server.close to hang.
     @Test
     public void testMultipleHttp2GetSsl() throws Exception {
         //
@@ -509,6 +507,7 @@ public class Http2ClientIT {
     }
 
 
+    // FIXME Causes server.close to hang.
     @Test
     public void testMultipleHttpPostSsl() throws Exception {
         //
@@ -582,6 +581,7 @@ public class Http2ClientIT {
         }
     }
 
+    // FIXME Causes server.close to hang.
     @Test
     public void testMultipleHttp2PostSsl() throws Exception {
         //
@@ -655,7 +655,6 @@ public class Http2ClientIT {
         }
     }
 
-
     public String callApiAsync() throws Exception {
         final Http2Client client = createClient();
         final CountDownLatch latch = new CountDownLatch(1);
@@ -675,6 +674,50 @@ public class Http2ClientIT {
             IoUtils.safeClose(connection);
         }
         return reference.get().getAttachment(Http2Client.RESPONSE_BODY);
+    }
+
+    public ByteBuffer callApiWithByteBuffer() throws Exception {
+        final Http2Client client = createClient();
+        final CountDownLatch latch = new CountDownLatch(1);
+        final ClientConnection connection = client.connect(ADDRESS, worker, Http2Client.BUFFER_POOL, OptionMap.EMPTY).get();
+        final AtomicReference<ClientResponse> reference = new AtomicReference<>();
+        try {
+            ClientRequest request = new ClientRequest().setPath(API).setMethod(Methods.GET);
+            request.getRequestHeaders().put(Headers.HOST, "localhost");
+            client.populateHeader(request, "Bearer token", "cid", "tid");
+            request.getRequestHeaders().add(Headers.CONNECTION, Headers.CLOSE.toString());
+            connection.sendRequest(request, client.byteBufferClientCallback(reference, latch));
+            latch.await();
+
+           // final ClientResponse response = reference.get();
+            Assert.assertNotNull(reference.get().getAttachment(Http2Client.BUFFER_BODY));
+            Assert.assertEquals(false, connection.isOpen());
+        } finally {
+            IoUtils.safeClose(connection);
+        }
+        return reference.get().getAttachment(Http2Client.BUFFER_BODY);
+    }
+
+    public ByteBuffer callApiWithByteBufferRequest() throws Exception {
+        final Http2Client client = createClient();
+        final CountDownLatch latch = new CountDownLatch(1);
+        final ClientConnection connection = client.connect(ADDRESS, worker, Http2Client.BUFFER_POOL, OptionMap.EMPTY).get();
+        final AtomicReference<ClientResponse> reference = new AtomicReference<>();
+        try {
+            ClientRequest request = new ClientRequest().setPath(API).setMethod(Methods.GET);
+            request.getRequestHeaders().put(Headers.HOST, "localhost");
+            client.populateHeader(request, "Bearer token", "cid", "tid");
+            request.getRequestHeaders().add(Headers.CONNECTION, Headers.CLOSE.toString());
+            connection.sendRequest(request, client.byteBufferClientCallback(reference, latch, ByteBuffer.wrap("WebKitFormBoundaryOmz20xyMCkE27rN7".getBytes())));
+            latch.await();
+
+            // final ClientResponse response = reference.get();
+            Assert.assertNotNull(reference.get().getAttachment(Http2Client.BUFFER_BODY));
+            Assert.assertEquals(false, connection.isOpen());
+        } finally {
+            IoUtils.safeClose(connection);
+        }
+        return reference.get().getAttachment(Http2Client.BUFFER_BODY);
     }
 
     @Test

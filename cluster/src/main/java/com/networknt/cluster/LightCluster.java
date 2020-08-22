@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Network New Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -17,22 +17,17 @@
 package com.networknt.cluster;
 
 import com.networknt.balance.LoadBalance;
-import com.networknt.registry.NotifyListener;
-import com.networknt.registry.Registry;
-import com.networknt.registry.URL;
-import com.networknt.registry.URLImpl;
+import com.networknt.registry.*;
 import com.networknt.service.SingletonServiceFactory;
 import com.networknt.utility.ConcurrentHashSet;
 import com.networknt.utility.Constants;
+import com.networknt.utility.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -45,6 +40,8 @@ import java.util.stream.Collectors;
  * Created by stevehu on 2017-01-27.
  */
 public class LightCluster implements Cluster {
+    private final static String GENERAL_TAG = "*";
+
     private static Logger logger = LoggerFactory.getLogger(LightCluster.class);
     private static Registry registry = SingletonServiceFactory.getBean(Registry.class);
     private static LoadBalance loadBalance = SingletonServiceFactory.getBean(LoadBalance.class);
@@ -58,17 +55,22 @@ public class LightCluster implements Cluster {
     /**
      * Implement serviceToUrl with client side service discovery.
      *
-     * @param protocol String
-     * @param serviceId String
+     * @param protocol either http or https
+     * @param serviceId unique service identifier
      * @param requestKey String
-     * @return String
+     * @return Url discovered after the load balancing. Return null if the corresponding service cannot be found
      */
     @Override
     public String serviceToUrl(String protocol, String serviceId, String tag, String requestKey) {
         URL url = loadBalance.select(discovery(protocol, serviceId, tag), requestKey);
-        if(logger.isDebugEnabled()) logger.debug("final url after load balance = " + url);
-        // construct a url in string
-        return protocol + "://" + url.getHost() + ":" + url.getPort();
+        if (url != null) {
+            logger.debug("Final url after load balance = {}.", url);
+            // construct a url in string
+            return protocol + "://" + url.getHost() + ":" + url.getPort();
+        } else {
+            logger.debug("The service: {} cannot be found from service discovery.", serviceId);
+            return null;
+        }
     }
 
     /**
@@ -91,7 +93,7 @@ public class LightCluster implements Cluster {
         // lookup in serviceMap first, if not there, then subscribe and discover.
         List<URL> urls = serviceMap.get(serviceId);
         if(logger.isDebugEnabled()) logger.debug("cached serviceId " + serviceId + " urls = " + urls);
-        if(urls == null) {
+        if((urls == null) || (urls.isEmpty())) {
             URL subscribeUrl = URLImpl.valueOf(protocol + "://localhost/" + serviceId);
             if(tag != null) {
                 subscribeUrl.addParameter(Constants.TAG_ENVIRONMENT, tag);
@@ -99,11 +101,21 @@ public class LightCluster implements Cluster {
             if(logger.isDebugEnabled()) logger.debug("subscribeUrl = " + subscribeUrl);
             // you only need to subscribe once.
             if(!subscribedSet.contains(subscribeUrl)) {
-                registry.subscribe(subscribeUrl, new ClusterNotifyListener());
+                registry.subscribe(subscribeUrl, new ClusterNotifyListener(serviceId));
                 subscribedSet.add(subscribeUrl);
             }
             urls = registry.discover(subscribeUrl);
             if(logger.isDebugEnabled()) logger.debug("discovered urls = " + urls);
+            serviceMap.put(serviceId, urls == null ? new ArrayList<>() : urls);
+        }
+        //if doesn't specify envTag at all, return all the urls
+        if(tag == null) {return urls;}
+        //otherwise return corresponding urls, especially, when don't register with an envTag, envTag should be "" instead of null;
+        if(urls != null) {
+            return urls.stream()
+                    .filter(url -> url.getParameter(URLParamType.environment.getName()) != null
+                            && (url.getParameter(URLParamType.environment.getName()).equals(tag) || url.getParameter(URLParamType.environment.getName()).equals(GENERAL_TAG)))
+                    .collect(Collectors.toList());
         }
         return urls;
     }
@@ -119,10 +131,19 @@ public class LightCluster implements Cluster {
     }
 
     static class ClusterNotifyListener implements NotifyListener {
+        private String serviceId;
+
+        ClusterNotifyListener(String serviceId) {
+            this.serviceId = serviceId;
+        }
+
         @Override
         public void notify(URL registryUrl, List<URL> urls) {
-            if(logger.isDebugEnabled()) logger.debug("notify is called in ClusterNotifyListener registryUrl = " + registryUrl + " urls = " + urls);
-            if(urls != null && urls.size() > 0) serviceMap.put(urls.get(0).getPath(), urls);
+            logger.debug("registryUrl is: {}", registryUrl);
+            logger.debug("notify service: {} with updated urls: {}", serviceId, urls.toString());
+            if(StringUtils.isNotBlank(serviceId)) {
+                serviceMap.put(serviceId, urls == null ? new ArrayList<>() : urls);
+            }
         }
     }
 }

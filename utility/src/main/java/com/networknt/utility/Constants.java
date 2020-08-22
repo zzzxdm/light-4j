@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Network New Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -27,6 +27,8 @@ public class Constants {
     public static final String CORRELATION_ID_STRING = "X-Correlation-Id";
     public static final String TRACEABILITY_ID_STRING = "X-Traceability-Id";
     public static final String USER_ID_STRING = "user_id";
+    public static final String USER_TYPE_STRING = "user_type";
+    public static final String ROLES_STRING = "roles";
     public static final String CLIENT_ID_STRING = "client_id";
     public static final String SCOPE_CLIENT_ID_STRING = "scope_client_id";
     public static final String SCOPE_STRING = "scope";
@@ -43,8 +45,10 @@ public class Constants {
 
     public static final String CSRF_TOKEN_STRING = "X-CSRF-TOKEN";
 
-    // Logger
+    // Logging and Auditing
     public static final String AUDIT_LOGGER = "Audit";
+    public static final String STATUS = "Status";
+    public static final String STACK_TRACE = "StackTrace";
 
     // JWT claims for fine-grained authorization in business context.
     // The key for the subject token claims in auditInfo after security handler
@@ -88,6 +92,7 @@ public class Constants {
 
     // Headers for light-router
     public static final String SERVICE_ID_STRING = "service_id";
+    public static final String SERVICE_URL_STRING = "service_url";
     public static final String ENV_TAG_STRING = "env_tag";
     public static final String HASH_KEY_STRING = "hash_key";
     public static final String HTTPS = "https";

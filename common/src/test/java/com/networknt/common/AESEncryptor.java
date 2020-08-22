@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Network New Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -16,21 +16,27 @@
 
 package com.networknt.common;
 
-import com.networknt.utility.Constants;
-import sun.misc.BASE64Encoder;
+import static com.networknt.decrypt.Decryptor.CRYPT_PREFIX;
+import static java.lang.System.exit;
 
-import javax.crypto.*;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.UnsupportedEncodingException;
 import java.security.AlgorithmParameters;
 import java.security.InvalidKeyException;
 import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.KeySpec;
+import java.util.Base64;
 
-import static com.networknt.utility.Decryptor.CRYPT_PREFIX;
-import static java.lang.System.exit;
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
+
+import com.networknt.utility.Constants;
+
 
 public class AESEncryptor {
     public static void main(String [] args) {
@@ -48,7 +54,7 @@ public class AESEncryptor {
     private static final String STRING_ENCODING = "UTF-8";
     private SecretKeySpec secret;
     private Cipher cipher;
-    private BASE64Encoder base64Encoder;
+    private Base64.Encoder base64Encoder;
 
     public AESEncryptor() {
         try {
@@ -65,7 +71,7 @@ public class AESEncryptor {
             cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 
             // For production use commons base64 encoder
-            base64Encoder = new BASE64Encoder();
+            base64Encoder = Base64.getEncoder();
         } catch (Exception e) {
             throw new RuntimeException("Unable to initialize", e);
         }
@@ -92,7 +98,7 @@ public class AESEncryptor {
             byte[] out = new byte[iv.length + ciphertext.length];
             System.arraycopy(iv, 0, out, 0, iv.length);
             System.arraycopy(ciphertext, 0, out, iv.length, ciphertext.length);
-            return CRYPT_PREFIX + ":" + base64Encoder.encode(out);
+            return CRYPT_PREFIX + ":" + base64Encoder.encodeToString(out);
         } catch (IllegalBlockSizeException e) {
             throw new RuntimeException("Unable to encrypt", e);
         } catch (BadPaddingException e) {

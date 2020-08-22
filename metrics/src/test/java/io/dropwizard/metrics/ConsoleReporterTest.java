@@ -2,7 +2,7 @@
  * Copyright 2010-2013 Coda Hale and Yammer, Inc., 2014-2017 Dropwizard Team
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -77,7 +77,7 @@ public class ConsoleReporterTest {
 
         assertThat(consoleOutput())
                 .isEqualTo(lines(
-                        "3/17/13 6:04:36 PM =============================================================",
+                        "3/17/13, 6:04:36 PM ============================================================",
                         "",
                         "-- Gauges ----------------------------------------------------------------------",
                         "gauge",
@@ -100,7 +100,7 @@ public class ConsoleReporterTest {
 
         assertThat(consoleOutput())
                 .isEqualTo(lines(
-                        "3/17/13 6:04:36 PM =============================================================",
+                        "3/17/13, 6:04:36 PM ============================================================",
                         "",
                         "-- Counters --------------------------------------------------------------------",
                         "test.counter",
@@ -137,7 +137,7 @@ public class ConsoleReporterTest {
 
         assertThat(consoleOutput())
                 .isEqualTo(lines(
-                        "3/17/13 6:04:36 PM =============================================================",
+                        "3/17/13, 6:04:36 PM ============================================================",
                         "",
                         "-- Histograms ------------------------------------------------------------------",
                         "test.histogram",
@@ -174,7 +174,7 @@ public class ConsoleReporterTest {
 
         assertThat(consoleOutput())
                 .isEqualTo(lines(
-                        "3/17/13 6:04:36 PM =============================================================",
+                        "3/17/13, 6:04:36 PM ============================================================",
                         "",
                         "-- Meters ----------------------------------------------------------------------",
                         "test.meter",
@@ -220,7 +220,7 @@ public class ConsoleReporterTest {
 
         assertThat(consoleOutput())
                 .isEqualTo(lines(
-                        "3/17/13 6:04:36 PM =============================================================",
+                        "3/17/13, 6:04:36 PM ============================================================",
                         "",
                         "-- Timers ----------------------------------------------------------------------",
                         "test.another.timer",

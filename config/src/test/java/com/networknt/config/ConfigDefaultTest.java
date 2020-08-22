@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Network New Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -186,17 +186,31 @@ public class ConfigDefaultTest extends TestCase {
         Assert.assertEquals("$abc", tc.getValue6());
     }
 
-    public void testGetNullValueJsonMapConfig() throws Exception {
+    public void testGetNullValueJsonMapConfig() {
         config.clear();
         Map<String, Object> configMap = config.getJsonMapConfig("test_nullValue");
         Assert.assertEquals(null, configMap.get("value"));
     }
 
-    @Test
+    public void testEmptyStringValueJsonMapConfig() {
+        config.clear();
+        Map<String, Object> configMap = config.getJsonMapConfig("test_emptyString");
+        Assert.assertEquals("", configMap.get("value"));
+    }
+
+    
     public void testInjectionExclusionConfig() {
         config.clear();
         Map<String, Object> configMap = config.getJsonMapConfig("test_exclusion");
         Assert.assertEquals("${TEST.string}", configMap.get("key"));
+    }
+
+    public void testInvalidValueJsonMapConfig() {
+        config.clear();
+        try {
+            config.getJsonMapConfig("test_invalid");
+            fail();
+        } catch(Exception e) {}
     }
 
     public void testGetInputStream() throws Exception {

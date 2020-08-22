@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Network New Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public class PrometheusConfig {
     boolean enabled;
+    boolean enableHotspot;
 
 
 
@@ -43,7 +44,13 @@ public class PrometheusConfig {
         this.enabled = enabled;
     }
 
+    public boolean isEnableHotspot() {
+        return enableHotspot;
+    }
 
+    public void setEnableHotspot(boolean enableHotspot) {
+        this.enableHotspot = enableHotspot;
+    }
 
     public String getDescription() {
         return description;

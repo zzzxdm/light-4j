@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Network New Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -15,7 +15,6 @@
  */
 package com.networknt.security;
 
-import com.networknt.common.DecryptUtil;
 import com.networknt.config.Config;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
@@ -41,7 +40,7 @@ public class JwtIssuer {
     public static final String SECRET_CONFIG = "secret";
     public static final String JWT_PRIVATE_KEY_PASSWORD = "jwtPrivateKeyPassword";
     private static JwtConfig jwtConfig = (JwtConfig) Config.getInstance().getJsonObjectConfig(JWT_CONFIG, JwtConfig.class);
-    private static Map<String, Object> secretConfig = DecryptUtil.decryptMap(Config.getInstance().getJsonMapConfig(SECRET_CONFIG));
+    private static Map<String, Object> secretConfig = Config.getInstance().getJsonMapConfig(SECRET_CONFIG);
 
     /**
      * A static method that generate JWT token from JWT claims object

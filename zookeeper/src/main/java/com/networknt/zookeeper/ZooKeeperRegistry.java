@@ -28,14 +28,12 @@ import com.networknt.registry.URLImpl;
 import com.networknt.status.Status;
 import com.networknt.zookeeper.client.ZooKeeperClient;
 import org.I0Itec.zkclient.IZkChildListener;
-import org.I0Itec.zkclient.IZkDataListener;
 import org.I0Itec.zkclient.IZkStateListener;
 import org.apache.zookeeper.Watcher;
 
 import com.networknt.utility.Constants;
 import com.networknt.exception.FrameworkException;
 import com.networknt.registry.support.command.CommandFailbackRegistry;
-import com.networknt.registry.support.command.CommandListener;
 import com.networknt.registry.support.command.ServiceListener;
 import com.networknt.registry.URL;
 import com.networknt.utility.ConcurrentHashSet;
@@ -45,7 +43,6 @@ import org.slf4j.LoggerFactory;
 /**
  * The ZooKeeper Registry implementation.
  *
- * @author Steve Hu
  */
 public class ZooKeeperRegistry extends CommandFailbackRegistry {
     private static final Logger logger = LoggerFactory.getLogger(ZooKeeperRegistry.class);

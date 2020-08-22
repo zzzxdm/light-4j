@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Network New Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -16,13 +16,16 @@
 
 package com.networknt.email;
 
+import com.networknt.config.Config;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.mail.MessagingException;
 import java.io.File;
 
 public class EmailSenderTest {
-    //@Test
+    @Test
+    @Ignore
     public void testEmail() {
         EmailSender sender = new EmailSender();
         try {
@@ -32,7 +35,8 @@ public class EmailSenderTest {
         }
     }
 
-    //@Test
+    @Test
+    @Ignore
     public void testEmailWithAttachment() {
         EmailSender sender = new EmailSender();
         try {
@@ -42,5 +46,11 @@ public class EmailSenderTest {
         } catch (MessagingException e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void testConfigPassword() {
+        EmailConfig config = (EmailConfig)Config.getInstance().getJsonObjectConfig(EmailConfig.CONFIG_NAME, EmailConfig.class);
+        System.out.println("password = " + config.pass);
     }
 }

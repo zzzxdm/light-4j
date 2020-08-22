@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Network New Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -244,15 +244,20 @@ public class NioUtils {
     }
 
     /**
-     * convert String to ByteBuffer
+     * Convert String to ByteBuffer. Changed from direct to indirect due to the UTF8
+     * size is unpredictable and the performance improvement is unknown.
+     *
      * @param s string to be converted
      * @return ByteBuffer the result ByteBuffer
      */
     public static ByteBuffer toByteBuffer(String s) {
+        /*
         ByteBuffer buffer = ByteBuffer.allocateDirect(s.length());
         buffer.put(s.getBytes(UTF_8));
         buffer.flip();
         return buffer;
+        */
+        return ByteBuffer.wrap(s.getBytes(UTF_8));
     }
 
     /**

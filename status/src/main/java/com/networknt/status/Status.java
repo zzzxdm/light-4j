@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Network New Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -88,7 +88,7 @@ public class Status {
             try {
                 this.description = format(this.description, args);
             } catch (IllegalFormatException e) {
-                logger.warn(format("Error formatting description of status %s", code), e);
+//                logger.warn(format("Error formatting description of status %s", code), e);
             }
             if ((this.severity = (String) map.get("severity")) == null)
                 this.severity = defaultSeverity;
@@ -112,6 +112,23 @@ public class Status {
         this.message = message;
         this.description = description;
     }
+
+    /**
+     * Construct a status object based on all the properties in the object. It is not
+     * very often to use this construct to create object.
+     *
+     * @param httpStatus  HttpStatus
+     * @param message     Message
+     * @param description Description
+     */
+    public Status(HttpStatus httpStatus, String message, String description) {
+        this.statusCode = httpStatus.value();
+        this.code = httpStatus.getReasonPhrase();
+        this.severity = defaultSeverity;
+        this.message = message;
+        this.description = description;
+    }
+
 
     /**
      * Construct a status object based on all the properties in the object. It is not

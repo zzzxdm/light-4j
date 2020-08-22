@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Network New Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -30,6 +30,7 @@ import io.undertow.util.PathTemplateMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -147,7 +148,7 @@ public class Handler {
 	private static void addSourceChain(PathChain sourceChain) {
 		try {
 			Class sourceClass = Class.forName(sourceChain.getSource());
-			EndpointSource source = (EndpointSource)sourceClass.newInstance();
+			EndpointSource source = (EndpointSource)(sourceClass.getDeclaredConstructor().newInstance());
 			for (EndpointSource.Endpoint endpoint : source.listEndpoints()) {
 				PathChain sourcedPath = new PathChain();
 				sourcedPath.setPath(endpoint.getPath());
@@ -321,7 +322,11 @@ public class Handler {
 				httpServerExchange.putAttachment(ATTACHMENT_KEY,
 						new io.undertow.util.PathTemplateMatch(result.getMatchedTemplate(), result.getParameters()));
 				for (Map.Entry<String, String> entry : result.getParameters().entrySet()) {
+					// the values shouldn't be added to query param. but this is left as it was to keep backward compatability
 					httpServerExchange.addQueryParam(entry.getKey(), entry.getValue());
+					
+					// put values in path param map
+					httpServerExchange.addPathParam(entry.getKey(), entry.getValue());
 				}
 				String id = result.getValue();
 				httpServerExchange.putAttachment(CHAIN_ID, id);
@@ -411,8 +416,8 @@ public class Handler {
 		// create an instance of the handler
 		Object handlerOrProviderObject = null;
 		try {
-			handlerOrProviderObject = namedClass.second.newInstance();
-		} catch (InstantiationException | IllegalAccessException e) {
+			handlerOrProviderObject = namedClass.second.getDeclaredConstructor().newInstance();
+		} catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
 			throw new RuntimeException("Could not instantiate handler class: " + namedClass.second);
 		}
 

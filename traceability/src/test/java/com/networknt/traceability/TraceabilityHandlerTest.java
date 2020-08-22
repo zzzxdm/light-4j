@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Network New Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -19,7 +19,6 @@ package com.networknt.traceability;
 import com.networknt.client.Http2Client;
 import com.networknt.exception.ClientException;
 import com.networknt.httpstring.HttpStringConstants;
-import com.networknt.utility.Constants;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.client.*;
@@ -36,7 +35,6 @@ import org.slf4j.LoggerFactory;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;

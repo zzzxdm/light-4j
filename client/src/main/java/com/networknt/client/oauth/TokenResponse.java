@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Network New Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -44,6 +44,9 @@ public class TokenResponse extends Status {
 
     @JsonProperty(value="refresh_token")
     private String refreshToken;
+
+    @JsonProperty(value="remember")
+    private String remember;
 
     @JsonProperty(value="example_parameter")
     private String exampleParameter;
@@ -96,6 +99,14 @@ public class TokenResponse extends Status {
         this.refreshToken = refreshToken;
     }
 
+    public String getRemember() {
+        return remember;
+    }
+
+    public void setRemember(String remember) {
+        this.remember = remember;
+    }
+
     public String getExampleParameter() {
         return exampleParameter;
     }
@@ -113,6 +124,7 @@ public class TokenResponse extends Status {
                 ", scope='" + scope + '\'' +
                 ", state='" + state + '\'' +
                 ", refreshToken='" + refreshToken + '\'' +
+                ", remember'" + remember + '\'' +
                 ", exampleParameter='" + exampleParameter + '\'' +
                 '}';
     }

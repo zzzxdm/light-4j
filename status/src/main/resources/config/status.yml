@@ -386,7 +386,7 @@ ERR10052:
   statusCode: 401
   code: ERR10052
   message: GET_TOKEN_ERROR
-  description: "Cannot get valid token: %s."
+  description: Cannot get valid token %s.
 ERR10053:
   statusCode: 401
   code: ERR10053
@@ -610,8 +610,8 @@ ERR11502:
 ERR11601:
   statusCode: 400
   code: ERR11601
-  message: DELETE_USER_EXECUTION_EXCEPTION
-  description: Execution Exception caused by %s when deleting user %s.
+  message: INCORRECT_TOKEN_TYPE
+  description: Incorrect token type. Expecting %s.
 ERR11602:
   statusCode: 400
   code: ERR11602
@@ -620,43 +620,43 @@ ERR11602:
 ERR11603:
   statusCode: 400
   code: ERR11603
-  message: CREATE_USER_EXECUTION_EXCEPTION
-  description: Execution Exception caused by %s when creating user %s.
+  message: DELETE_USER_DENIED
+  description: Delete user %s denied with user %s and roles %s.
 ERR11604:
   statusCode: 400
   code: ERR11604
-  message: CREATE_USER_EXCEPTION
-  description: Exception %s is caught when creating user %s.
+  message: USER_ID_IS_USED
+  description: UserId %s is used already.
 ERR11605:
   statusCode: 400
   code: ERR11605
-  message: UPDATE_USER_EXECUTION_EXCEPTION
-  description: Execution Exception caused by %s when updating user %s.
+  message: SEND_MESSAGE_EXCEPITON
+  description: Send message exception caused by %s with user %s.
 ERR11606:
   statusCode: 400
   code: ERR11606
   message: UPDATE_USER_EXCEPTION
   description: Exception %s is caught when updating user %s.
 ERR11607:
-  statusCode: 400
+  statusCode: 404
   code: ERR11607
   message: USER_NOT_FOUND_BY_EMAIL
   description: User not found by email %s.
 ERR11608:
   statusCode: 400
   code: ERR11608
-  message: USER_NOT_FOUND_BY_ID
-  description: User not found by entityId %s.
+  message: CHANGE_PASSWORD_DENIED
+  description: User %s is not allowed to change password for %s.
 ERR11609:
-  statusCode: 400
+  statusCode: 404
   code: ERR11609
-  message: USER_NOT_FOUND_BY_USERID
+  message: USER_NOT_FOUND_BY_ID
   description: User not found by userId %s.
 ERR11610:
   statusCode: 400
   code: ERR11610
-  message: USER_NOT_FOUND_BY_USERIDEMAIL
-  description: User not found by userIdEmail %s.
+  message: EMAIL_NOT_CONFIRMED
+  description: Email %s is not confirmed. Please find the user confirmation email.
 ERR11611:
   statusCode: 400
   code: ERR11611
@@ -665,8 +665,8 @@ ERR11611:
 ERR11612:
   statusCode: 400
   code: ERR11612
-  message: USER_ID_IS_USED
-  description: Userid %s is registered.
+  message: WRONG_LOGIN_PASSWORD
+  description: Wrong login password for user with email %s.
 ERR11613:
   statusCode: 400
   code: ERR11613
@@ -685,13 +685,113 @@ ERR11615:
 ERR11616:
   statusCode: 400
   code: ERR11616
-  message: INVALID_SIGNIN_PASSWORD
-  description: Invalid signIn password.
+  message: ERROR_VALIDATE_PASSWORD
+  description: Password validation error with excetion %s.
 ERR11617:
   statusCode: 400
   code: ERR11617
   message: USER_NOT_ACTIVATED
   description: User %s is not activated.
+ERR11618:
+  statusCode: 400
+  code: ERR11618
+  message: USER_QUERY_DENIED
+  description: User %s is not matched the JWT user_id %s and not admin role.
+ERR11619:
+  statusCode: 400
+  code: ERR11619
+  message: EMAIL_SENDING_ERROR
+  description: Failed to send the confirmation email to %s.
+ERR11620:
+  statusCode: 400
+  code: ERR11620
+  message: PERMISSION_DENIED
+  description: Fail to access the endpoint for user or roles %s.
+ERR11621:
+  statusCode: 400
+  code: ERR11621
+  message: CITY_REGISTERED
+  description: The city has been registered with key %s, %s, %s.
+ERR11622:
+  statusCode: 400
+  code: ERR11622
+  message: PROFILE_LOCATION_INCOMPLETE
+  description: Country, Province or City is missing in user profile.
+ERR11623:
+  statusCode: 404
+  code: ERR11623
+  message: CITY_NOT_FOUND
+  description: City not found for %s, %s, %s.
+ERR11624:
+  statusCode: 400
+  code: ERR11624
+  message: COUNTRY_PROVINCE_CITY_EMPTY
+  description: Country %s or province %s or city %s is empty.
+ERR11625:
+  statusCode: 404
+  code: ERR11625
+  message: ENTITY_NOT_FOUND
+  description: Entity not found for %s at %s, %s and %s defined in your profile. Please create an entity first.
+ERR11626:
+  statusCode: 404
+  code: ERR11626
+  message: STATUS_NOT_FOUND
+  description: Status not found for email or userId %s.
+ERR11627:
+  statusCode: 404
+  code: ERR11627
+  message: PRIVATE_MESSAGE_NOT_FOUND
+  description: Private message not found for email %s.
+ERR11628:
+  statusCode: 404
+  code: ERR11628
+  message: WEBSITE_NOT_FOUND
+  description: Website not found for email %s.
+ERR11629:
+  statusCode: 400
+  code: ERR11629
+  message: WALLET_QUERY_DENIED
+  description: Taiji Wallet %s email is not matched the JWT user_id %s and not admin role.
+ERR11630:
+  statusCode: 404
+  code: ERR11630
+  message: EMAIL_NOT_FOUND_BY_WALLET
+  description: Email not found for Taiji wallet %s.
+ERR11631:
+  statusCode: 404
+  code: ERR11631
+  message: NO_ENTITY_REGISTERED
+  description: No entity has been registered for the %s, %s, %s, %s, %s combination.
+ERR11632:
+  statusCode: 404
+  code: ERR11632
+  message: PAYMENT_NOT_FOUND_BY_EMAIL
+  description: Payment not found for email %s.
+ERR11633:
+  statusCode: 404
+  code: ERR11633
+  message: ORDER_NOT_FOUND_BY_EMAIL
+  description: Order not found for email %s.
+ERR11634:
+  statusCode: 404
+  code: ERR11634
+  message: REFERENCE_NOT_FOUND
+  description: Reference not found for name %s and language %s.
+ERR11635:
+  statusCode: 400
+  code: ERR11635
+  message: HOST_NOT_MATCH_EMAIL
+  description: Host %s doesn't match the email domain %s.
+ERR11636:
+  statusCode: 400
+  code: ERR11636
+  message: SQL_EXCEPTION
+  description: SQLException with error %s.
+ERR11637:
+  statusCode: 404
+  code: ERR11637
+  message: OBJECT_NOT_FOUND
+  description: Object %s not found for key %s.
 
 
 # OAuth2 service error 12000-13000
@@ -942,9 +1042,19 @@ ERR12048:
   description: Provider id %s exists; It has been regristed already
 ERR12049:
   statusCode: 400
-  code: ERR12048
+  code: ERR12049
   message: PROVIDER_ID_INVALID
   description: Provider id invalid
+ERR12050:
+  statusCode: 400
+  code: ERR12050
+  message: FAILED_TO_POPULATE_HEADER
+  description: Failed to populate client credentials scope token in header in method %s
+ERR12051:
+  statusCode: 400
+  code: ERR12051
+  message: HOST_IS_REQUIRED
+  description: Host is required
 
 # Tokenization service
 ERR12100:
@@ -987,7 +1097,23 @@ ERR12107:
   code: ERR12107
   message: TOKEN_NOT_FOUND
   description: Token %s not found in token_vault table in database %s
+ERR12108:
+  statusCode: 400
+  code: ERR12108
+  message: LOGGING_DISABLED
+  description: Logging is disabled in logging.yml
+ERR12109:
+  statusCode: 400
+  code: ERR12109
+  message: LOGGING_LEVEL_NOT_PROVIDED
+  description: Logging level is not provided
 
+# http2client error 13000-14000
+ERR13001:
+  statusCode: 403
+  code: ERR13001
+  message: UNABLE_PARSE_SCOPES_FROM_HEADER
+  description: Cannot parse scopes from request headers.
 
 # 20000-29999 common error codes within your business domain.
 # It is highly recommended to have your error code shared within your organization or your line of business.

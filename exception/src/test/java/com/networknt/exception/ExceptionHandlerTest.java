@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Network New Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -19,6 +19,8 @@ package com.networknt.exception;
 import com.networknt.client.Http2Client;
 import com.networknt.config.Config;
 import com.networknt.status.Status;
+import com.networknt.exception.ApiException;
+import com.networknt.exception.ClientException;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.client.ClientConnection;
@@ -102,7 +104,7 @@ public class ExceptionHandlerTest {
         final CountDownLatch latch = new CountDownLatch(1);
         final ClientConnection connection;
         try {
-            connection = client.connect(new URI("http://localhost:8080"), Http2Client.WORKER, Http2Client.SSL, Http2Client.BUFFER_POOL, OptionMap.EMPTY).get();
+            connection = client.connect(new URI("http://localhost:8080"), Http2Client.WORKER, Http2Client.BUFFER_POOL, OptionMap.EMPTY).get();
         } catch (Exception e) {
             throw new ClientException(e);
         }
@@ -130,7 +132,7 @@ public class ExceptionHandlerTest {
         final CountDownLatch latch = new CountDownLatch(1);
         final ClientConnection connection;
         try {
-            connection = client.connect(new URI("http://localhost:8080"), Http2Client.WORKER, Http2Client.SSL, Http2Client.BUFFER_POOL, OptionMap.EMPTY).get();
+            connection = client.connect(new URI("http://localhost:8080"), Http2Client.WORKER, Http2Client.BUFFER_POOL, OptionMap.EMPTY).get();
         } catch (Exception e) {
             throw new ClientException(e);
         }
@@ -162,7 +164,7 @@ public class ExceptionHandlerTest {
         final CountDownLatch latch = new CountDownLatch(1);
         final ClientConnection connection;
         try {
-            connection = client.connect(new URI("http://localhost:8080"), Http2Client.WORKER, Http2Client.SSL, Http2Client.BUFFER_POOL, OptionMap.EMPTY).get();
+            connection = client.connect(new URI("http://localhost:8080"), Http2Client.WORKER, Http2Client.BUFFER_POOL, OptionMap.EMPTY).get();
         } catch (Exception e) {
             throw new ClientException(e);
         }
@@ -189,7 +191,7 @@ public class ExceptionHandlerTest {
         final CountDownLatch latch = new CountDownLatch(1);
         final ClientConnection connection;
         try {
-            connection = client.connect(new URI("http://localhost:8080"), Http2Client.WORKER, Http2Client.SSL, Http2Client.BUFFER_POOL, OptionMap.EMPTY).get();
+            connection = client.connect(new URI("http://localhost:8080"), Http2Client.WORKER, Http2Client.BUFFER_POOL, OptionMap.EMPTY).get();
         } catch (Exception e) {
             throw new ClientException(e);
         }

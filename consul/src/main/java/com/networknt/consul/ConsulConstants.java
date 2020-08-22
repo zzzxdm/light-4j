@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Network New Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -31,12 +31,6 @@ public class ConsulConstants {
 	 *
 	 */
 	public static final String CONSUL_LIGHT_COMMAND = "light/command/";
-
-
-	/**
-	 * Default protocol
-	 */
-	public static final String DEFAULT_PROTOCOL = "http";
 
 	/**
 	 * Default consul agent port

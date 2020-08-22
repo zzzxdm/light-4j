@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Network New Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -21,6 +21,7 @@ import java.util.Map;
 
 /**
  * @author Nicholas Azar
+ * @author Dan Dobrin
  */
 public class HandlerConfig {
     private boolean enabled;
@@ -28,6 +29,8 @@ public class HandlerConfig {
     private Map<String, List<String>> chains;
     private List<PathChain> paths;
     private List<String> defaultHandlers;
+    private boolean auditOnError;
+    private boolean auditStackTrace;
 
     public boolean isEnabled() {
         return enabled;
@@ -67,6 +70,22 @@ public class HandlerConfig {
 
     public void setDefaultHandlers(List<String> defaultHandlers) {
         this.defaultHandlers = defaultHandlers;
+    }
+    
+    public boolean getAuditOnError() {
+    	return auditOnError;
+    }
+    
+    public void setAuditOnError(boolean auditOnError) {
+    	this.auditOnError = auditOnError;
+    }
+    
+    public boolean getAuditStackTrace() {
+    	return auditStackTrace;
+    }
+    
+    public void setAuditStackTrace(boolean auditStackTrace) {
+    	this.auditStackTrace = auditStackTrace;
     }
 }
 

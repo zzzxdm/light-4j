@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Network New Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -23,10 +23,12 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.Assert.fail;
+
 /**
  * Created by Nicholas Azar (@NicholasAzar)
  */
-public class TestCentralizedManagement extends TestCase {
+public class TestCentralizedManagement {
 
     @Test
     public void testMap_mergeApplied_mutatesInPlaceCorrectly() {
@@ -70,5 +72,21 @@ public class TestCentralizedManagement extends TestCase {
         testMap.put("key", "${TEST.boolean: true}");
         CentralizedManagement.mergeMap(testMap);
         Assert.assertTrue(testMap.get("key") instanceof Boolean);
+    }
+
+    @Test
+    public void testMap_allowNullOverwrite() {
+        Map<String, Object> testMap = new HashMap<>();
+        testMap.put("key", "${TEST.null: value}");
+        CentralizedManagement.mergeMap(testMap);
+        Assert.assertNull(testMap.get("key"));
+    }
+
+    @Test
+    public void testMap_allowEmptyStringOverwrite() {
+        Map<String, Object> testMap = new HashMap<>();
+        testMap.put("key", "${TEST.emptyString: value}");
+        CentralizedManagement.mergeMap(testMap);
+        Assert.assertEquals("", testMap.get("key"));
     }
 }
